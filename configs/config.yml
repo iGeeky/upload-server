@@ -1,0 +1,19 @@
+log_level: debug
+server_env: local-dev
+log_filename: /data/logs/upload-server.log
+# listen 0.0.0.0 only for test.
+listen: 0.0.0.0:2022
+custom_header_prefix: X-OA-
+check_sign: true
+debug: true
+disable_stacktrace: false
+upload_database:
+  dialect: mysql
+  host: 127.0.0.1
+  port: 3306
+  db_name: upload
+  user: upload
+  password: 123456
+  debug: true
+app_keys:
+  upload: 5d2f39659400aa31edc1a585c2efd8c9
