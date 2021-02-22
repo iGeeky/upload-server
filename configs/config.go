@@ -3,12 +3,22 @@ package configs
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
 	"time"
 
 	"github.com/iGeeky/open-account/pkg/baselib/log"
 
 	"gopkg.in/yaml.v2"
 )
+
+type StorageConfig struct {
+	EndPoint      string
+	EndPointShare string //外部访问的EndPoint地址。
+	AccessID      string
+	AccessKey     string
+	Bucket        string
+	UrlPrefix     string
+}
 
 // CORS 跨域请求配置参数
 type CORS struct {
@@ -68,11 +78,25 @@ type ServerConfig struct {
 
 	CORS CORS `yaml:"cors"`
 
+	ChunkTmpDir string //临时文件存储目录
+	ChunkSize   int    //标准块大小
+
+	RequestPerSecond int           //爬虫每秒请求数。
+	MaxTasks         int           //爬虫最大的同时下载数
+	DownloadTimeout  time.Duration //下载文件的超时时间。
+	LocalDir         string        //下载的文件的临时存储目录
+	ImageQuality     int           //jpeg压缩质量.
+
 	// appID及对应的sign key
 	AppKeys     map[string]string `yaml:"app_keys"`
 	SignHeaders []string          `yaml:"sign_headers"` //需要参与签名的请求头列表
 
 	CustomHeaderPrefix string `yaml:"custom_header_prefix"` //自定义请求头的前缀(默认为X-OA-)
+
+	// 默认的存储配置.
+	StorageDef StorageConfig `yaml:"storage_def"`
+	// appid对应的存储配置，当找不到时，使用默认的存储配置。
+	AppStorages map[string]*StorageConfig `yaml:"app_storages"`
 }
 
 // Config 全局配置
@@ -111,6 +135,14 @@ func LoadConfig(configFilename string) (config *ServerConfig, err error) {
 			MaxOpenConns: 50,
 			MaxIdleConns: 20,
 		},
+
+		ChunkTmpDir:      "/data/upload/chunk/",
+		ChunkSize:        1024 * 512,
+		DownloadTimeout:  time.Duration(time.Second * 65),
+		RequestPerSecond: 5,
+		MaxTasks:         5,
+		LocalDir:         "/data/upload/local",
+		ImageQuality:     80,
 	}
 	config = Config
 
@@ -126,6 +158,10 @@ func LoadConfig(configFilename string) (config *ServerConfig, err error) {
 	if err != nil {
 		log.Fatalf("Unmarshal yaml config failed! err: %v", configFilename, err)
 		return
+	}
+
+	if !strings.HasSuffix(Config.ChunkTmpDir, "/") {
+		Config.ChunkTmpDir = Config.ChunkTmpDir + "/"
 	}
 
 	return
