@@ -33,6 +33,7 @@ func APIOption(c *gin.Context) {
 func getAPIRouters() (routers []RouterInfo) {
 	routers = []RouterInfo{
 		{HTTP_GET, "/upload/ping", false, TokenNone, controller.APIPing},
+		{HTTP_POST, "/upload/simple", false, TokenNone, controller.UploadSimple},
 	}
 	return
 }
