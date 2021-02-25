@@ -95,7 +95,7 @@ type ServerConfig struct {
 	// 默认的存储配置.
 	StorageDef StorageConfig `yaml:"storage_def"`
 	// appid对应的存储配置，当找不到时，使用默认的存储配置。
-	AppStorages map[string]*StorageConfig `yaml:"app_storages"`
+	AppStorages map[string]*StorageConfig `yaml:"storages"`
 }
 
 // Config 全局配置

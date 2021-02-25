@@ -16,10 +16,25 @@ upload_database:
   password: 123456
   debug: true
 storage_def:
-  end_point:
-	access_id:
-  access_key:
-  bucket:
-  url_prefix:
+  end_point: 127.0.0.1:9000
+  access_id: THE_ACCESS_KEY_ID
+  access_key: THE_SECRET_ACCESS_KEY
+  bucket: def
+  url_prefix: http://192.168.31.100:9000/def/
+storages:
+  img:
+    end_point: oss-cn-shanghai.aliyuncs.com
+    access_id: ALIYUN_ACCESS_KEY_ID
+    access_key: ALIYUN_SECRET_ACCESS_KEY
+    bucket: myimg
+    url_prefix: http://myimg.oss-cn-shanghai.aliyuncs.com/
+  file:
+    end_point: s3.us-east-1.amazonaws.com
+    access_id: S3_ACCESS_KEY_ID
+    access_key: S3_SECRET_ACCESS_KEY
+    bucket: myimg
+    url_prefix: https://myimg.s3.us-east-1.amazonaws.com/
 app_keys:
   upload: 5d2f39659400aa31edc1a585c2efd8c9
+  img: 269c9611f2e2e959fdb04ff168b47406
+  file: d41d8cd98f00b204e9800998ecf8427e
