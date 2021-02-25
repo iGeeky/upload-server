@@ -81,6 +81,10 @@ github.com/iGeeky/open-account v0.0.0-20210205140608-960d11a62045 h1:HiFfU6KViy6
 github.com/iGeeky/open-account v0.0.0-20210205140608-960d11a62045/go.mod h1:fWj/amCUoyOQ9aAR4qIVouXhPAqS5pos66eaC0cEbSM=
 github.com/iGeeky/open-account v0.0.0-20210218155053-4c76bce29a2f h1:WTVA4kmdIRQx8f2S2Wm3n3PbJke2/XD26jVwedVz3g0=
 github.com/iGeeky/open-account v0.0.0-20210218155053-4c76bce29a2f/go.mod h1:fWj/amCUoyOQ9aAR4qIVouXhPAqS5pos66eaC0cEbSM=
+github.com/iGeeky/open-account v0.0.0-20210224150447-8675b8b77df3 h1:MId1g3tRVyX/mezAghouJ/6d3C8hq301Zy/s3FEhfbg=
+github.com/iGeeky/open-account v0.0.0-20210224150447-8675b8b77df3/go.mod h1:fWj/amCUoyOQ9aAR4qIVouXhPAqS5pos66eaC0cEbSM=
+github.com/iGeeky/open-account v0.0.0-20210224151536-1276f2013535 h1:p92WB945AiOjfvnPhvxYtIh/pZ0IW3xPv6HTDwXT0LU=
+github.com/iGeeky/open-account v0.0.0-20210224151536-1276f2013535/go.mod h1:fWj/amCUoyOQ9aAR4qIVouXhPAqS5pos66eaC0cEbSM=
 github.com/jie123108/imaging v1.1.0 h1:cpZkJ7O3/dRwl7NSmhzTrgEEKjp7vW8yz0Ivo1o9nOE=
 github.com/jie123108/imaging v1.1.0/go.mod h1:dNDdLioVKcZG2P5Qip9whp9rA5R2gqNkQaXsNvYcJR4=
 github.com/jinzhu/gorm v1.9.16 h1:+IyIjPEABKRpsu/F8OvDPy9fyQlgsg2luMV2ZIH5i5o=

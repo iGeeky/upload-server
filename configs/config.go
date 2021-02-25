@@ -12,22 +12,21 @@ import (
 )
 
 type StorageConfig struct {
-	EndPoint      string
-	EndPointShare string //外部访问的EndPoint地址。
-	AccessID      string
-	AccessKey     string
-	Bucket        string
-	UrlPrefix     string
+	EndPoint  string `yaml:"end_point"`
+	AccessID  string `yaml:"access_id"`
+	AccessKey string `yaml:"access_key"`
+	Bucket    string `yaml:"bucket"`
+	UrlPrefix string `yaml:"url_prefix"` //上传后的URL前缀(如果是通过CDN访问, 需要配置成CDN的域名)
 }
 
 // CORS 跨域请求配置参数
 type CORS struct {
-	Enable           bool   `toml:"enable"`
-	AllowOrigins     string `toml:"allow_origins"`
-	AllowMethods     string `toml:"allow_methods"`
-	AllowHeaders     string `toml:"allow_headers"`
-	AllowCredentials bool   `toml:"allow_credentials"`
-	MaxAge           int    `toml:"max_age"`
+	Enable           bool   `yaml:"enable"`
+	AllowOrigins     string `yaml:"allow_origins"`
+	AllowMethods     string `yaml:"allow_methods"`
+	AllowHeaders     string `yaml:"allow_headers"`
+	AllowCredentials bool   `yaml:"allow_credentials"`
+	MaxAge           int    `yaml:"max_age"`
 }
 
 // DatabaseConfig 数据库配置.

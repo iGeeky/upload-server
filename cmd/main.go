@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/iGeeky/upload-server/configs"
+	"github.com/iGeeky/upload-server/internal/api/controller"
 	"github.com/iGeeky/upload-server/internal/api/routers"
 
 	"github.com/iGeeky/open-account/pkg/baselib/db"
@@ -52,7 +53,7 @@ func startServer(config *configs.ServerConfig) (err error) {
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  15 * time.Second,
 	}
-
+	log.Infof("upload-server listen at: %s", config.Listen)
 	// make sure idle connections returned
 	processed := make(chan struct{})
 	go func() {
@@ -105,7 +106,7 @@ func main() {
 	signUrls := make(map[string]bool, 10)
 	ginplus.SignConfig = ginplus.APISignConfig{config.Debug, config.CheckSign, config.SuperSignKey, config.AppKeys, signUrls}
 	ginplus.InitGinPlus(config.CustomHeaderPrefix)
-
+	controller.InitUpload(config.Debug)
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	err = startServer(config)

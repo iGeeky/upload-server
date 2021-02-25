@@ -11,9 +11,15 @@ upload_database:
   dialect: mysql
   host: 127.0.0.1
   port: 3306
-  db_name: upload
-  user: upload
+  database: uploadserver
+  user: uploadserver
   password: 123456
   debug: true
+storage_def:
+  end_point:
+	access_id:
+  access_key:
+  bucket:
+  url_prefix:
 app_keys:
   upload: 5d2f39659400aa31edc1a585c2efd8c9
