@@ -34,6 +34,7 @@ func getAPIRouters() (routers []RouterInfo) {
 	routers = []RouterInfo{
 		{HTTP_GET, "/upload/ping", false, TokenNone, controller.APIPing},
 		{HTTP_POST, "/upload/simple", true, TokenNone, controller.UploadSimple},
+		{HTTP_GET, "/upload/check_exist", true, TokenNone, controller.CheckExist},
 	}
 	return
 }

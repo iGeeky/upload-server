@@ -27,7 +27,7 @@ create table if not exists `uploadfile` (
     extinfo text null comment '扩展信息，一般是json格式',
     create_time int not null comment '创建时间',
     update_time int not null comment '更新时间',
-    KEY(`hash`),
-    KEY(`path`(128)),
+    KEY(`hash`, `app_id`),
+    KEY(`path`(128),`app_id`),
     KEY(`create_time`)
 )ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_bin comment '文件信息表';

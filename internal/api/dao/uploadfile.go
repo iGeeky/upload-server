@@ -34,7 +34,7 @@ func NewUploadFileDao() (dao *UploadFileDao) {
 	return
 }
 
-func (u *UploadFileDao) GetInfoByID(rid string, prefix string) (uploadFile *UploadFile, err error) {
+func (u *UploadFileDao) GetInfoByID(rid string) (uploadFile *UploadFile, err error) {
 	obj, err := u.GetSimple("rid=?", rid)
 	if obj != nil {
 		uploadFile = obj.(*UploadFile)
@@ -42,7 +42,15 @@ func (u *UploadFileDao) GetInfoByID(rid string, prefix string) (uploadFile *Uplo
 	return
 }
 
-func (u *UploadFileDao) MustGetInfoByID(rid string, prefix string) (uploadFile *UploadFile) {
+func (u *UploadFileDao) GetInfoByHash(hash, appID string) (uploadFile *UploadFile, err error) {
+	obj, err := u.GetSimple("hash=? and app_id=?", hash, appID)
+	if obj != nil {
+		uploadFile = obj.(*UploadFile)
+	}
+	return
+}
+
+func (u *UploadFileDao) MustGetInfoByID(rid string) (uploadFile *UploadFile) {
 	obj := u.MustGet("rid=?", rid)
 	if obj != nil {
 		uploadFile = obj.(*UploadFile)
@@ -50,8 +58,8 @@ func (u *UploadFileDao) MustGetInfoByID(rid string, prefix string) (uploadFile *
 	return
 }
 
-func (u *UploadFileDao) GetInfoByURL(url string, prefix string) (uploadFile *UploadFile, err error) {
-	obj, err := u.GetSimple("path = ?", url)
+func (u *UploadFileDao) GetInfoByURL(url, appID string) (uploadFile *UploadFile, err error) {
+	obj, err := u.GetSimple("path = ? and app_id=?", url, appID)
 	if obj != nil {
 		uploadFile = obj.(*UploadFile)
 	}

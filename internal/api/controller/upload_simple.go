@@ -11,68 +11,8 @@ import (
 	"github.com/iGeeky/upload-server/configs"
 	"github.com/iGeeky/upload-server/internal/api/dao"
 	"github.com/iGeeky/upload-server/internal/api/utils"
+	usutils "github.com/iGeeky/upload-server/pkg/utils"
 )
-
-// [Content-Type] = {文件扩展名，路径前缀}
-var gContentType map[string][]string
-var gExtContentTypes map[string]string
-
-func init() {
-	gContentType = make(map[string][]string)
-	// 图片
-	gContentType["image/gif"] = []string{"gif", "img"}
-	gContentType["image/jpeg"] = []string{"jpeg", "img"}
-	gContentType["image/jpg"] = []string{"jpg", "img"}
-	gContentType["image/png"] = []string{"png", "img"}
-	gContentType["image/x-png"] = []string{"png", "img"}
-	gContentType["image/x-png"] = []string{"png", "img"}
-	gContentType["image/bmp"] = []string{"bmp", "img"}
-
-	// 视频
-	gContentType["video/mp4"] = []string{"mp4", "video"}
-	gContentType["video/x-matroska"] = []string{"mkv", "video"}
-	gContentType["video/x-msvideo"] = []string{"avi", "video"}
-	gContentType["video/3gpp"] = []string{"3gp", "video"}
-	gContentType["video/x-flv"] = []string{"flv", "video"}
-	gContentType["video/mpeg"] = []string{"mpg", "video"}
-	gContentType["video/quicktime"] = []string{"mov", "video"}
-	gContentType["video/x-ms-wmv"] = []string{"wmv", "video"}
-	gContentType["application/vnd.apple.mpegurl"] = []string{"m3u8", "video"}
-
-	//音频
-	gContentType["audio/wav"] = []string{"wav", "audio"}
-
-	// 文本文件
-	gContentType["text/plain"] = []string{"txt", "file"}
-	gContentType["application/octet-stream"] = []string{"bin", "file"}
-	gContentType["application/vnd.android.package-archive"] = []string{"apk", "file"}
-	gContentType["application/iphone-package-archive"] = []string{"ipa", "file"}
-	gContentType["text/xml"] = []string{"plist", "file"}
-
-	gExtContentTypes = make(map[string]string)
-	for contentType, varr := range gContentType {
-		ext := varr[0]
-		gExtContentTypes[ext] = contentType
-	}
-}
-
-/**
- * fileType, suffix
- */
-
-func getFileTypeAndSuffix(contentType string) (string, string) {
-	info := gContentType[contentType]
-	if len(info) == 0 {
-		log.Errorf("Content Type [%s] not support!", contentType)
-		return "", "ERR_CONTENT_TYPE_INVALID"
-	}
-
-	return info[1], info[0]
-}
-
-func getContentTypeByExt(ext string) string {
-	return gExtContentTypes[ext]
-}
 
 //去掉Content-Type后的字符编码。
 func contentTypeTrim(contentType string) string {
@@ -105,14 +45,14 @@ func UploadSimple(c *gin.Context) {
 	// 图片处理参数(参数格式同阿里云图片处理参数兼容)
 	// https://help.aliyun.com/document_detail/171050.html?spm=a2c4g.11186623.6.650.438b12ff4jFECe
 	imageProcess := ctx.GetCustomHeader("ImageProcess")
-	target_quality, crop := utils.ParseImageProcessParams(imageProcess)
-	if target_quality > 0 {
-		quality = target_quality
+	targetQuality, crop := utils.ParseImageProcessParams(imageProcess)
+	if targetQuality > 0 {
+		quality = targetQuality
 	}
 
 	bodyReader := bytes.NewReader(body)
 	bodyLen := int64(len(body))
-	fileType, suffix := getFileTypeAndSuffix(contentType)
+	fileType, suffix := usutils.GetFileTypeAndSuffix(contentType)
 	if fileType == "" {
 		ctx.JSONFail(400, suffix)
 		return
@@ -172,7 +112,7 @@ func UploadSimple(c *gin.Context) {
 	}
 
 	uploadFileDao := dao.NewUploadFileDao()
-	resInfo, err := uploadFileDao.GetInfoByID(rid, fileType)
+	resInfo, err := uploadFileDao.GetInfoByID(rid)
 	if err == nil && resInfo != nil {
 		log.Infof("-------- file [fileType=%s,hash=%s,url=%s] is uploaded! -------- ", fileType, hash, resInfo.Path)
 		data := gin.H{"url": resInfo.Path, "rid": resInfo.Rid, "fileType": fileType}
@@ -204,6 +144,45 @@ func UploadSimple(c *gin.Context) {
 	log.Infof("write file %s ok. url is: %s", filename, url)
 
 	ctx.JSONOK(gin.H{"url": url, "rid": rid})
+
+	return
+}
+
+// CheckExist 检查资源是否存在.
+func CheckExist(c *gin.Context) {
+	ctx := NewUContetPlus(c)
+	appID := ctx.MustGet("appID").(string)
+
+	var resInfo *dao.UploadFile
+	var err error
+
+	uploadFileDao := dao.NewUploadFileDao()
+	URL := ctx.GetCustomHeader("URL")
+	if URL != "" {
+		// 如果Path参数不为空
+		resInfo, err = uploadFileDao.GetInfoByURL(URL, appID)
+	} else {
+		rid := ctx.GetCustomHeader("ID")
+		if rid != "" {
+			rid = utils.IdToRid(appID, rid)
+			resInfo, err = uploadFileDao.GetInfoByID(rid)
+		} else {
+			hash := ctx.GetCustomHeader("Hash")
+			resInfo, err = uploadFileDao.GetInfoByHash(hash, appID)
+		}
+	}
+
+	if err == nil {
+		if resInfo != nil {
+			data := gin.H{"url": resInfo.Path, "rid": resInfo.Rid}
+			ctx.JSONOK(data)
+		} else {
+			data := gin.H{"ok": true, "reason": "NOT-EXIST"}
+			ctx.JSON(200, data)
+		}
+	} else {
+		ctx.JSONFail(500, errors.ErrServerError)
+	}
 
 	return
 }
