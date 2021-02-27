@@ -23,24 +23,26 @@ func contentTypeTrim(contentType string) string {
 	return contentType
 }
 
-// UploadSimple 直接通过http body上传文件.
-func UploadSimple(c *gin.Context) {
-	ctx := NewUContetPlus(c)
+// uploadInternal 直接通过http body上传文件.
+func uploadInternal(ctx *UContextPlus, body []byte, hash, contentType, debugID string) {
 
 	// 参数解析.
 	appID := ctx.MustGet("appID").(string)
-	body, _ := ctx.GetBody()
-
-	hash := ctx.GetCustomHeader("Hash")
-	contentType := ctx.GetHeader("Content-Type")
 	strResourceType := strings.TrimSpace(ctx.GetCustomHeader("Type"))
 	rid := ctx.GetCustomHeader("Id")
-
 	// 目标路径.
 	target := strings.TrimSpace(ctx.GetCustomHeader("Target"))
 	isTest := ctx.GetCustomHeader("Test") == "1"
 	contentType = contentTypeTrim(contentType)
 	quality := configs.Config.ImageQuality
+
+	if debugID == "" {
+		if rid != "" {
+			debugID = "id=" + rid
+		} else if hash != "" {
+			debugID = "hash=" + hash
+		}
+	}
 
 	// 图片处理参数(参数格式同阿里云图片处理参数兼容)
 	// https://help.aliyun.com/document_detail/171050.html?spm=a2c4g.11186623.6.650.438b12ff4jFECe
@@ -58,18 +60,19 @@ func UploadSimple(c *gin.Context) {
 		return
 	}
 	calcHash := coreutils.Sha1hex(body)
-	if hash != calcHash {
+	if hash != "" && hash != calcHash {
 		log.Errorf("request hash is %s, calcHash is %s", hash, calcHash)
 		ctx.JSONFail(400, utils.ErrHashInvalid)
 		return
 	}
 
+	hash = calcHash
 	width := 0
 	height := 0
 	if fileType == "img" {
 		size, err := utils.GetImageSize(body)
 		if err != nil {
-			log.Errorf("Get Image[%s]'s size failed! err: %v", c.Request.RequestURI, err)
+			log.Errorf("Get Image[%s]'s size failed! err: %v", debugID, err)
 		} else {
 			width = size.Width
 			height = size.Height
@@ -78,7 +81,7 @@ func UploadSimple(c *gin.Context) {
 		if crop != nil {
 			// 设置了resize, 并且resize的大小与上传图片不一样, 需要进行resize操作.
 			if (crop.Width > 0 || crop.Height > 0) && (width != crop.Width || height != crop.Height) {
-				resourceName := c.Request.RequestURI
+				resourceName := debugID
 				enlargeSmaller := crop.EnlargeSmaller
 				bodyNew, err := utils.ResizeBytesImgToBytes(body, resourceName, crop.Width, crop.Height, enlargeSmaller, quality)
 				if err != nil {
@@ -95,7 +98,7 @@ func UploadSimple(c *gin.Context) {
 				// 重新获取图像大小.
 				size, err := utils.GetImageSize(body)
 				if err != nil {
-					log.Errorf("Get Image[%s]'s size failed! err: %v", c.Request.RequestURI, err)
+					log.Errorf("Get Image[%s]'s size failed! err: %v", debugID, err)
 				} else {
 					width = size.Width
 					height = size.Height
@@ -148,9 +151,20 @@ func UploadSimple(c *gin.Context) {
 	return
 }
 
+// UploadSimple 直接通过http body上传文件.
+func UploadSimple(c *gin.Context) {
+	ctx := NewUContextPlus(c)
+	// 参数解析.
+	body, _ := ctx.GetBody()
+
+	hash := ctx.GetCustomHeader("Hash")
+	contentType := ctx.GetHeader("Content-Type")
+	uploadInternal(ctx, body, hash, contentType, "")
+}
+
 // CheckExist 检查资源是否存在.
 func CheckExist(c *gin.Context) {
-	ctx := NewUContetPlus(c)
+	ctx := NewUContextPlus(c)
 	appID := ctx.MustGet("appID").(string)
 
 	var resInfo *dao.UploadFile

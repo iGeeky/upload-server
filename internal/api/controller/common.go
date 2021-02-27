@@ -29,8 +29,8 @@ func (c *UContextPlus) JSONOK(data gin.H) {
 	c.JSON(200, response)
 }
 
-// NewUContetPlus 创建一个扩展上下文.
-func NewUContetPlus(c *gin.Context) (context *UContextPlus) {
+// NewUContextPlus 创建一个扩展上下文.
+func NewUContextPlus(c *gin.Context) (context *UContextPlus) {
 	context = &UContextPlus{
 		ContextPlus: ginplus.NewContetPlus(c),
 	}
@@ -44,7 +44,7 @@ func createFilename(appId, hash, prefix, suffix string) (filename string) {
 
 // APIPing ping测试接口
 func APIPing(c *gin.Context) {
-	ctx := NewUContetPlus(c)
+	ctx := NewUContextPlus(c)
 	data := gin.H{"buildTime": utils.BuildTime, "GitBranch": utils.GitBranch, "GitCommit": utils.GitCommit, "now": utils.Datetime()}
 	ctx.JsonOk(data)
 }

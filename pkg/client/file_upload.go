@@ -133,21 +133,30 @@ func PostFile2UploadSvr(host, filename, appID, appKey, id, target, fileType, ima
 }
 
 type UploadURLSimpleReq struct {
-	URL             string `json:"url" validate:"required"`
-	Referer         string `json:"referer"`
-	UserAgent       string `json:"user_agent"`
-	ContentType     string `json:"content_type"`
-	ImageProcess    string `json:"imageProcess"`
-	StackBlurRadius uint32 `json:"stack_blur_radius"`
+	URL       string `json:"url"`
+	Referer   string `json:"referer"`
+	UserAgent string `json:"userAgent"`
 }
 
-func UploadURL(host, appID, appKey string, uploadURL *UploadURLSimpleReq, timeout time.Duration, isTest bool) *net.OkJson {
+func UploadURL(host, appID, appKey string, uploadURL *UploadURLSimpleReq, id, target, fileType, imageProcess string, timeout time.Duration, isTest bool) *net.OkJson {
 	uri := host + "/v1/upload/url"
 	res := &net.OkJson{Ok: false, Reason: errors.ErrServerError}
 
 	headers := make(map[string]string, 10)
 	headers[CustomHeaderName("Platform")] = "test"
 	headers[CustomHeaderName("AppID")] = appID
+	if id != "" {
+		headers[CustomHeaderName("ID")] = id
+	}
+	if fileType != "" {
+		headers[CustomHeaderName("Type")] = fileType
+	}
+	if imageProcess != "" {
+		headers[CustomHeaderName("ImageProcess")] = imageProcess
+	}
+	if target != "" {
+		headers[CustomHeaderName("Target")] = target
+	}
 	if isTest {
 		headers[CustomHeaderName("Test")] = "1"
 	}

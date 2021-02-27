@@ -24,7 +24,6 @@ func responseDebug(res *net.OkJson, verbose bool) {
 		fmt.Println("Error:", res.Error)
 		fmt.Println("reqDebug:", res.ReqDebug)
 	} else {
-		fmt.Println(string(res.RawBody))
 		if res.Reason != "" {
 			fmt.Println("reason:", res.Reason)
 		} else {
@@ -36,6 +35,11 @@ func responseDebug(res *net.OkJson, verbose bool) {
 func main() {
 	var verbose bool
 	var filename string
+
+	var url string
+	var referer string
+	var userAgent string
+
 	var host string
 	var appID string
 	var appKey string
@@ -53,6 +57,9 @@ func main() {
 	flag.StringVar(&customHeaderPrefix, "customHeaderPrefix", "X-OA-", "X-OA-|X-APP-")
 	flag.StringVar(&checkExist, "checkExist", "", "Params: id=resource-id | hash=resource-hash | url=http://xxx.com/resource/url")
 	flag.StringVar(&filename, "file", "", "Filename(.jpg|.png|.gif|.mp4|.avi)")
+	flag.StringVar(&url, "url", "", "Url, .eg: https://test.com/test.jpg")
+	flag.StringVar(&referer, "referer", "", "Referer for url download")
+	flag.StringVar(&userAgent, "userAgent", "", "UserAgent for url download")
 	flag.StringVar(&appID, "appID", "img", "App Id")
 	flag.StringVar(&appKey, "appKey", "super", "App Key")
 	flag.StringVar(&id, "id", "", "Resource Id")
@@ -85,6 +92,17 @@ func main() {
 	if filename != "" {
 		res := client.PostFile2UploadSvr(host, filename, appID, appKey, id, target, fileType, imageProcess, timeout, isTest)
 		responseDebug(res, verbose)
+		return
+	}
+	if url != "" {
+		uploadURL := &client.UploadURLSimpleReq{
+			URL:       url,
+			Referer:   referer,
+			UserAgent: userAgent,
+		}
+		res := client.UploadURL(host, appID, appKey, uploadURL, id, target, fileType, imageProcess, timeout, isTest)
+		responseDebug(res, verbose)
+		return
 	}
 
 }
