@@ -1,2 +1,4 @@
 dist
 config-dev.yml
+libxfile.Darwin.a
+xfile.o

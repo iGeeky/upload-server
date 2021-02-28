@@ -11,6 +11,15 @@ BUILD=GOARCH=amd64 CGO_ENABLED=1 go build -o $@ ${GIT_FLAGS} $<
 MAC_BUILD=GOOS=darwin $(BUILD)
 LINUX_BUILD=GOOS=linux $(BUILD)
 
+
+xfile.mac: pkg/xfile/c/xfile.c
+	rm -f pkg/xfile/c/libxfile.Darwin.a
+	cd pkg/xfile/c && make
+
+xfile.linux: pkg/xfile/c/xfile.c
+	rm -f pkg/xfile/c/libxfile.Linux.a
+	$(DOCKER_CMD) /bin/bash -c "cd /app/pkg/xfile/c && make"
+
 ./dist/upload-server.mac: cmd/main.go
 	$(MAC_BUILD)
 
