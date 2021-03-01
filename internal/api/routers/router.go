@@ -36,6 +36,7 @@ func getAPIRouters() (routers []RouterInfo) {
 		{HTTP_POST, "/upload/simple", true, TokenNone, controller.UploadSimple},
 		{HTTP_POST, "/upload/url", true, TokenNone, controller.UploadURLSimple},
 		{HTTP_GET, "/upload/check_exist", true, TokenNone, controller.CheckExist},
+		{HTTP_POST, "/upload/chunk/init", true, TokenNone, controller.UploadChunkInit},
 	}
 	return
 }
