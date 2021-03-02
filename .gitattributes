@@ -1,0 +1,4 @@
+*.go linguist-language=go
+*.py linguist-language=go
+*.md linguist-language=go
+*.c linguist-language=go

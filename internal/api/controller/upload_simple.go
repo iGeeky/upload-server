@@ -28,10 +28,10 @@ func uploadInternal(ctx *UContextPlus, body []byte, hash, contentType, debugID s
 
 	// 参数解析.
 	appID := ctx.MustGet("appID").(string)
-	strResourceType := strings.TrimSpace(ctx.GetCustomHeader("Type"))
+	strResourceType := ctx.GetCustomHeader("Type")
 	rid := ctx.GetCustomHeader("Id")
 	// 目标路径.
-	target := strings.TrimSpace(ctx.GetCustomHeader("Target"))
+	target := ctx.GetCustomHeader("Target")
 	isTest := ctx.GetCustomHeader("Test") == "1"
 	contentType = contentTypeTrim(contentType)
 	quality := configs.Config.ImageQuality
@@ -157,7 +157,7 @@ func UploadSimple(c *gin.Context) {
 	// 参数解析.
 	body, _ := ctx.GetBody()
 
-	hash := ctx.GetCustomHeader("Hash")
+	hash := ctx.MustGetCustomHeader("Hash")
 	contentType := ctx.GetHeader("Content-Type")
 	uploadInternal(ctx, body, hash, contentType, "")
 }
