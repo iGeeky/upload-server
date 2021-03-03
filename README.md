@@ -23,6 +23,9 @@
   * [x] S3
   * [x] OSS
   * [x] MinIO
+## API Document
+
+[API文档](./docs/api.md)
 
 ## License
 

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/iGeeky/open-account/pkg/baselib/errors"
+	"github.com/iGeeky/open-account/pkg/baselib/ginplus"
 	"github.com/iGeeky/open-account/pkg/baselib/log"
 	"github.com/iGeeky/open-account/pkg/baselib/net"
 	"github.com/iGeeky/open-account/pkg/baselib/utils"
@@ -63,6 +64,7 @@ func NewUploadClient(host, appID, appKey string) (client *UploadClient) {
 // SetCustomHeaderPrefix 设置请求头前缀.
 func (client *UploadClient) SetCustomHeaderPrefix(customHeaderPrefix string) {
 	client.CustomHeaderPrefix = customHeaderPrefix
+	ginplus.InitSign([]string{}, customHeaderPrefix)
 }
 
 // CustomHeaderName 获取自定义的请求头名.

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"math"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -27,13 +26,13 @@ type FileStatus struct {
 	ChunkSize int
 }
 
-func getCurrentChunkSize(filesize int, chunksize int, chunkindex int) (contentChunkSize int, chunks int) {
-	chunks = int(math.Ceil(float64(filesize) / float64(chunksize)))
-	fullchunks := filesize / chunksize
+func getCurrentChunkSize(filesize int, chunkSize int, chunkindex int) (contentChunkSize int, chunks int) {
+	chunks = int(math.Ceil(float64(filesize) / float64(chunkSize)))
+	fullchunks := filesize / chunkSize
 	if chunkindex >= 0 && chunkindex < fullchunks {
-		contentChunkSize = chunksize
+		contentChunkSize = chunkSize
 	} else if chunkindex == fullchunks {
-		contentChunkSize = filesize % chunksize
+		contentChunkSize = filesize % chunkSize
 	}
 	return
 }
@@ -103,13 +102,16 @@ func initChunk(appID, contentType, strResourceType string, hash string, filesize
 	return true, fileStatus
 }
 
-func returnChunkInfo(ctx *UContextPlus, fileType string, chunks int, url string, rid string, extinfo string) {
+func returnChunkInfo(ctx *UContextPlus, fileType string, chunks int, url string,
+	rid string, chunkSize int, extinfo string) {
 	completedChunks := make([]int, 0)
 	notCompletedChunks := make([]int, 0)
 	for i := 0; i < chunks; i++ {
 		completedChunks = append(completedChunks, i)
 	}
-	data := gin.H{"completedChunks": completedChunks, "notCompletedChunks": notCompletedChunks, "url": url, "rid": rid}
+	data := gin.H{"completedChunks": completedChunks,
+		"notCompletedChunks": notCompletedChunks,
+		"url":                url, "rid": rid, "chunkSize": chunkSize}
 
 	ctx.JSONOK(data)
 }
@@ -119,7 +121,7 @@ func uploadChunkInitInternal(ctx *UContextPlus, contentType, hash string, filesi
 	fileType, _ := usutils.GetFileTypeAndSuffix(contentType)
 	strResourceType := ctx.GetCustomHeader("Type")
 	isTest := ctx.GetCustomHeader("Test") == "1"
-	chunksize := ctx.GetCustomHeaderInt("ChunkSize", configs.Config.ChunkSize)
+	chunkSize := ctx.GetCustomHeaderInt("ChunkSize", configs.Config.ChunkSize)
 
 	//生成rid, 检查在数据库里面有没有
 	rid := ctx.GetCustomHeader("Id")
@@ -133,24 +135,24 @@ func uploadChunkInitInternal(ctx *UContextPlus, contentType, hash string, filesi
 	resInfo, err := uploadFileDao.GetInfoByID(rid)
 	if err == nil && resInfo != nil {
 		log.Infof("-------- file [fileType=%s,hash=%s,url=%s] is uploaded! -------- ", fileType, hash, resInfo.Path)
-		chunks := int(math.Ceil(float64(filesize) / float64(chunksize)))
-		returnChunkInfo(ctx, fileType, chunks, resInfo.Path, resInfo.Rid, resInfo.Extinfo)
+		chunks := int(math.Ceil(float64(filesize) / float64(chunkSize)))
+		returnChunkInfo(ctx, fileType, chunks, resInfo.Path, resInfo.Rid, chunkSize, resInfo.Extinfo)
 		return
 	}
 
-	log.Infof("initChunk(appID:%s, contentType: %s, hash: %s, filesize: %v, chunksize: %d, isTest: %v",
-		appID, contentType, hash, filesize, chunksize, isTest)
-	ok, status := initChunk(appID, contentType, strResourceType, hash, filesize, chunksize, isTest)
+	log.Infof("initChunk(appID:%s, contentType: %s, hash: %s, filesize: %v, chunkSize: %d, isTest: %v",
+		appID, contentType, hash, filesize, chunkSize, isTest)
+	ok, status := initChunk(appID, contentType, strResourceType, hash, filesize, chunkSize, isTest)
 
 	if ok {
 		chunkStatus := status.(FileStatus)
 		if chunkStatus.ChunkSize > 0 {
-			chunksize = chunkStatus.ChunkSize
+			chunkSize = chunkStatus.ChunkSize
 		}
 		data := gin.H{
 			"completedChunks":    chunkStatus.CompletedChunks,
 			"notCompletedChunks": chunkStatus.NotCompletedChunks,
-			"url":                "", "rid": "", "chunksize": chunksize,
+			"url":                "", "rid": "", "chunkSize": chunkSize,
 		}
 		ctx.JSONOK(data)
 	} else {
@@ -162,16 +164,8 @@ func uploadChunkInitInternal(ctx *UContextPlus, contentType, hash string, filesi
 // UploadChunkInit 分成上传初始化
 func UploadChunkInit(c *gin.Context) {
 	ctx := NewUContextPlus(c)
-	hash := ctx.GetCustomHeader("Hash")
-	strFileSize := ctx.GetCustomHeader("FileSize")
-	i, err := strconv.ParseInt(strFileSize, 10, 32)
-	if err != nil {
-		log.Errorf("The value <%s> of request header <%s> is invalid", strFileSize, ctx.CustomHeaderName("FileSize"))
-		ctx.JsonFail(errors.ErrArgsInvalid)
-		return
-	}
-	filesize := int(i)
-
+	hash := ctx.MustGetCustomHeader("Hash")
+	filesize := ctx.MustGetCustomHeaderInt("FileSize", 0)
 	contentType := ctx.GetHeader("Content-Type")
 	contentType = contentTypeTrim(contentType)
 
@@ -296,7 +290,7 @@ func UploadChunkUpload(c *gin.Context) {
 	/**
 	* X-OA-hash: $filehash 文件HASH(sha1)
 	* X-OA-filesize: $filesize(文件大小)
-	* X-OA-chunksize: $chunksize(块大小)
+	* X-OA-chunkSize: $chunkSize(块大小)
 	* X-OA-chunkindex: $chunkindex(块索引号，从0开始)
 	* X-OA-chunkhash: $chunk_hash(块HASH，sha1)
 	**/
@@ -308,7 +302,7 @@ func UploadChunkUpload(c *gin.Context) {
 	hash := ctx.MustGetCustomHeader("Hash")
 
 	filesize := ctx.MustGetCustomHeaderInt64("FileSize", -1)
-	chunksize := ctx.GetCustomHeaderInt("ChunkSize", configs.Config.ChunkSize)
+	chunkSize := ctx.GetCustomHeaderInt("ChunkSize", configs.Config.ChunkSize)
 	chunkindex := ctx.MustGetCustomHeaderInt("ChunkIndex", 0)
 	chunkhash := ctx.MustGetCustomHeader("ChunkHash")
 
@@ -330,7 +324,7 @@ func UploadChunkUpload(c *gin.Context) {
 		rid = utils.IdToRid(appID, rid)
 	}
 
-	ok, status := saveChunkInternal(appID, rid, contentType, strResourceType, hash, filesize, chunksize, chunkindex, body, isTest)
+	ok, status := saveChunkInternal(appID, rid, contentType, strResourceType, hash, filesize, chunkSize, chunkindex, body, isTest)
 	// log.Infof("Save Chunk .................")
 	if ok {
 		chunkStatus := status.(FileStatus)
