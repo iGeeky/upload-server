@@ -37,8 +37,11 @@ func NewUContextPlus(c *gin.Context) (context *UContextPlus) {
 	return
 }
 
-func createFilename(appId, hash, prefix, suffix string) (filename string) {
-	filename = fmt.Sprintf("%s/%s/%s/%s.%s", prefix, hash[0:2], hash[2:4], hash, suffix)
+func createFilename(appID, hash, prefix, suffix string) (filename string) {
+	filename = fmt.Sprintf("%s/%s/%s/%s", prefix, hash[0:2], hash[2:4], hash)
+	if suffix != "" {
+		filename = filename + "." + suffix
+	}
 	return
 }
 

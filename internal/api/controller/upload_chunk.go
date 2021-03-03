@@ -119,7 +119,7 @@ func uploadChunkInitInternal(ctx *UContextPlus, contentType, hash string, filesi
 	fileType, _ := usutils.GetFileTypeAndSuffix(contentType)
 	strResourceType := ctx.GetCustomHeader("Type")
 	isTest := ctx.GetCustomHeader("Test") == "1"
-	chunksize := ctx.MustGetCustomHeaderInt("ChunkSize", configs.Config.ChunkSize)
+	chunksize := ctx.GetCustomHeaderInt("ChunkSize", configs.Config.ChunkSize)
 
 	//生成rid, 检查在数据库里面有没有
 	rid := ctx.GetCustomHeader("Id")
@@ -308,7 +308,7 @@ func UploadChunkUpload(c *gin.Context) {
 	hash := ctx.MustGetCustomHeader("Hash")
 
 	filesize := ctx.MustGetCustomHeaderInt64("FileSize", -1)
-	chunksize := ctx.MustGetCustomHeaderInt("ChunkSize", configs.Config.ChunkSize)
+	chunksize := ctx.GetCustomHeaderInt("ChunkSize", configs.Config.ChunkSize)
 	chunkindex := ctx.MustGetCustomHeaderInt("ChunkIndex", 0)
 	chunkhash := ctx.MustGetCustomHeader("ChunkHash")
 

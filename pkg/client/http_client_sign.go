@@ -25,12 +25,12 @@ func ParseArgs(uri string) (args map[string]string) {
 	return
 }
 
-func HttpPostWithSign(uri string, body []byte, headers map[string]string, timeout time.Duration, appKey string) *net.OkJson {
+func (client *UploadClient) HttpPostWithSign(uri string, body []byte, headers map[string]string, timeout time.Duration) *net.OkJson {
 	signature, SignStr := "", ""
-	if appKey != "" {
+	if client.AppKey != "" {
 		args := ParseArgs(uri)
-		signature, SignStr = ginplus.SignSimple(uri, args, headers, body, appKey)
-		headers[CustomHeaderName("SIGN")] = signature
+		signature, SignStr = ginplus.SignSimple(uri, args, headers, body, client.AppKey)
+		headers[client.CustomHeaderName("SIGN")] = signature
 	}
 
 	res := net.HttpPostJson(uri, body, headers, timeout)
@@ -41,12 +41,12 @@ func HttpPostWithSign(uri string, body []byte, headers map[string]string, timeou
 	return res
 }
 
-func HttpGetWithSign(uri string, headers map[string]string, timeout time.Duration, appKey string) *net.OkJson {
+func (client *UploadClient) HttpGetWithSign(uri string, headers map[string]string, timeout time.Duration) *net.OkJson {
 	signature, SignStr := "", ""
-	if appKey != "" {
+	if client.AppKey != "" {
 		args := ParseArgs(uri)
-		signature, SignStr = ginplus.SignSimple(uri, args, headers, nil, appKey)
-		headers[CustomHeaderName("SIGN")] = signature
+		signature, SignStr = ginplus.SignSimple(uri, args, headers, nil, client.AppKey)
+		headers[client.CustomHeaderName("SIGN")] = signature
 	}
 
 	res := net.HttpGetJson(uri, headers, timeout)

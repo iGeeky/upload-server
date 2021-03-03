@@ -1,9 +1,5 @@
 package utils
 
-import (
-	"github.com/iGeeky/open-account/pkg/baselib/log"
-)
-
 // [Content-Type] = {文件扩展名，路径前缀}
 var gContentType map[string][]string
 var gExtContentTypes map[string]string
@@ -33,12 +29,13 @@ func init() {
 	//音频
 	gContentType["audio/wav"] = []string{"wav", "audio"}
 
-	// 文本文件
+	// 文件
 	gContentType["text/plain"] = []string{"txt", "file"}
-	gContentType["application/octet-stream"] = []string{"bin", "file"}
+	gContentType["application/octet-stream"] = []string{"", "file"}
 	gContentType["application/vnd.android.package-archive"] = []string{"apk", "file"}
 	gContentType["application/iphone-package-archive"] = []string{"ipa", "file"}
 	gContentType["text/xml"] = []string{"plist", "file"}
+	gContentType["application/pdf"] = []string{"pdf", "file"}
 
 	gExtContentTypes = make(map[string]string)
 	for contentType, varr := range gContentType {
@@ -51,8 +48,7 @@ func init() {
 func GetFileTypeAndSuffix(contentType string) (string, string) {
 	info := gContentType[contentType]
 	if len(info) == 0 {
-		log.Errorf("Content Type [%s] not support!", contentType)
-		return "", "ERR_CONTENT_TYPE_INVALID"
+		return "file", ""
 	}
 
 	return info[1], info[0]
